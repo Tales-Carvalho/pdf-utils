@@ -125,8 +125,19 @@ def extractImages(inputFilename):
 
 
 def extractText(inputFilename):
-    print("TODO")
-    # TODO: create method
+    
+    inputFile = open(os.path.join("input", inputFilename), "rb")
+    pdfReader = PyPDF2.PdfFileReader(inputFile)
+
+    pages = []
+    for i in range(pdfReader.getNumPages()):
+        pages.append(pdfReader.getPage(i))
+
+    for i, page in enumerate(pages):
+        textContent = page.extractText()
+        with open(os.path.join("output", f"{inputFilename}_page_{i}.txt"), "w") as outputFile:
+            outputFile.write(textContent)
+            outputFile.close()
 
 if __name__ == '__main__':
     print("TODO")
