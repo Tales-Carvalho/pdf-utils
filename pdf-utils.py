@@ -60,32 +60,68 @@ def extractImages(inputFilename):
 
     xObjects = []
     for page in pages:
-        xObjects.append(page['/Resources']['/XObject'].getObject())
+        if '/XObject' in page['/Resources']:
+            xObjects.append(page['/Resources']['/XObject'].getObject())
 
     for xObject in xObjects:
         for obj in xObject:
             if xObject[obj]['/Subtype'] == '/Image':
                 size = (xObject[obj]['/Width'], xObject[obj]['/Height'])
                 data = xObject[obj].getData()
-                if xObject[obj]['/ColorSpace'] == '/DeviceRGB':
-                    mode = "RGB"
-                else:
-                    mode = "P"
 
-                if xObject[obj]['/Filter'] == '/FlateDecode':
+                if '/Filter' in xObject[obj]:
+                    if xObject[obj]['/Filter'] == '/DCTDecode' or '/DCTDecode' in xObject[obj]['/Filter']:
+                        img = open(os.path.join("output", obj[1:] + ".jpg"), "wb")
+                        img.write(data)
+                        img.close()
+                        print("Saved file: " + os.path.join("output", obj[1:] + ".jpg"))
+                    elif xObject[obj]['/Filter'] == '/FlateDecode' or '/FlateDecode' in xObject[obj]['/Filter']:
+                        if '/ColorSpace' not in xObject[obj]:
+                            mode = None
+                        elif xObject[obj]['/ColorSpace'] == '/DeviceRGB':
+                            mode = "RGB"
+                        elif xObject[obj]['/ColorSpace'] == '/DeviceCMYK':
+                            mode = "CMYK"
+                        elif xObject[obj]['/ColorSpace'] == '/DeviceGray':
+                            mode = "P"
+                        else:
+                            if type(xObject[obj]['/ColorSpace']) == PyPDF2.generic.ArrayObject:
+                                if xObject[obj]['/ColorSpace'][0] == '/ICCBased':
+                                    colorMap = xObject[obj]['/ColorSpace'][1].getObject()['/N']
+                                    if colorMap == 1:
+                                        mode = "P"
+                                    elif colorMap == 3:
+                                        mode = "RGB"
+                                    elif colorMap == 4:
+                                        mode = "CMYK"
+                                    else:
+                                        mode = None
+                                else:
+                                    mode = None
+                            else:
+                                mode = None
+                        if mode != None:
+                            img = Image.frombytes(mode, size, data)
+                            if mode == "CMYK":
+                                img = img.convert("RGB")
+                            img.save(os.path.join("output", obj[1:] + ".png"))
+                            print("Saved file: " + os.path.join("output", obj[1:] + ".png"))
+                        else:
+                            print("Color map nor supported for Image " + str(obj[1:]))
+                    elif xObject[obj]['/Filter'] == '/JPXDecode':
+                        img = open(os.path.join("output", obj[1:] + ".jp2"), "wb")
+                        img.write(data)
+                        img.close()
+                        print("Saved file: " + os.path.join("output", obj[1:] + ".jp2"))
+                    elif xObject[obj]['/Filter'] == '/CCITTFaxDecode':
+                        img = open(os.path.join("output", obj[1:] + ".tiff"), "wb")
+                        img.write(data)
+                        img.close()
+                        print("Saved file: " + os.path.join("output", obj[1:] + ".tiff"))
+                else:
                     img = Image.frombytes(mode, size, data)
                     img.save(os.path.join("output", obj[1:] + ".png"))
                     print("Saved file: " + os.path.join("output", obj[1:] + ".png"))
-                elif xObject[obj]['/Filter'] == '/DCTDecode' or '/DCTDecode' in xObject[obj]['/Filter']:
-                    img = open(os.path.join("output", obj[1:] + ".jpg"), "wb")
-                    img.write(data)
-                    img.close()
-                    print("Saved file: " + os.path.join("output", obj[1:] + ".jpg"))
-                elif xObject[obj]['/Filter'] == '/JPXDecode':
-                    img = open(os.path.join("output", obj[1:] + ".jp2"), "wb")
-                    img.write(data)
-                    img.close()
-                    print("Saved file: " + os.path.join("output", obj[1:] + ".jp2"))
 
 
 def extractText(inputFilename):
