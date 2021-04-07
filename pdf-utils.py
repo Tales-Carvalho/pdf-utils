@@ -5,19 +5,18 @@ from PIL import Image
 
 def merge(inputFilenames):
 
+    pdfOutputFile = open(os.path.join("output", "MergedFiles.pdf"), "wb")
     pdfWriter = PyPDF2.PdfFileWriter()
 
     for filename in inputFilenames:
         with open(os.path.join("input", filename), "rb") as inputFile:
             pdfReader = PyPDF2.PdfFileReader(inputFile)
-            for pageNum in range(pdfReader.numPages):
-                pageObj = pdfReader.getPage(pageNum)
-                pdfWriter.addPage(pageObj)
+            for pageNum in range(pdfReader.getNumPages()):
+                pdfWriter.addPage(pdfReader.getPage(pageNum))
+            pdfWriter.write(pdfOutputFile)
             inputFile.close()
     
-    with open(os.path.join("output", "MergedFiles.pdf"), "wb") as pdfOutputFile:
-        pdfWriter.write(pdfOutputFile)
-        pdfOutputFile.close()
+    pdfOutputFile.close()
 
     return 0
 
