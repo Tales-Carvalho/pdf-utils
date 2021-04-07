@@ -1,6 +1,7 @@
 import PyPDF2
 import os
 from PIL import Image
+import tika
 
 
 def merge(inputFilenames):
@@ -126,20 +127,12 @@ def extractImages(inputFilename):
 
 def extractText(inputFilename):
     
-    inputFile = open(os.path.join("input", inputFilename), "rb")
-    pdfReader = PyPDF2.PdfFileReader(inputFile)
-
-    pages = []
-    for i in range(pdfReader.getNumPages()):
-        pages.append(pdfReader.getPage(i))
-
-    for i, page in enumerate(pages):
-        textContent = page.extractText()
-        with open(os.path.join("output", f"{inputFilename}_page_{i}.txt"), "w") as outputFile:
-            outputFile.write(textContent)
-            outputFile.close()
+    from tika import parser
+    parsed = parser.from_file(os.path.join("input", inputFilename))
+    with open(os.path.join("output", f"{inputFilename}_textContent.txt"), "w") as outputFile:
+        outputFile.write(parsed['content'])
+        outputFile.close()
 
 if __name__ == '__main__':
-    print("TODO")
-    # TODO: interface for PDF usage
+    extractText("Undegrad_Transcript.pdf")
 
