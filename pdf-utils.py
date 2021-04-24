@@ -11,7 +11,7 @@ def merge(inputFilenames, outputFilename):
 
     for filename in inputFilenames:
         with open(os.path.join("input", filename), "rb") as inputFile:
-            pdfReader = PyPDF2.PdfFileReader(inputFile)
+            pdfReader = PyPDF2.PdfFileReader(inputFile, strict=False)
             for pageNum in range(pdfReader.getNumPages()):
                 pdfWriter.addPage(pdfReader.getPage(pageNum))
             pdfWriter.write(pdfOutputFile)
@@ -25,7 +25,7 @@ def merge(inputFilenames, outputFilename):
 def split(inputFilename, pageToSplit):
 
     inputFile = open(os.path.join("input", inputFilename), "rb")
-    pdfReader = PyPDF2.PdfFileReader(inputFile)
+    pdfReader = PyPDF2.PdfFileReader(inputFile, strict=False)
 
     lastPage = pdfReader.getNumPages()
 
@@ -40,7 +40,7 @@ def split(inputFilename, pageToSplit):
         pdfWriter.write(pdfOutputFile)
         pdfOutputFile.close()
     
-    pdfReader = PyPDF2.PdfFileReader(inputFile) # Bypasses a file stream bug of PyPDF2
+    pdfReader = PyPDF2.PdfFileReader(inputFile, strict=False) # Bypasses a file stream bug of PyPDF2
     pdfWriter = PyPDF2.PdfFileWriter()
     for page in range(pageToSplit, lastPage):
         pdfWriter.addPage(pdfReader.getPage(page))
@@ -54,7 +54,7 @@ def split(inputFilename, pageToSplit):
 def extractImages(inputFilename):
 
     inputFile = open(os.path.join("input", inputFilename), "rb")
-    pdfReader = PyPDF2.PdfFileReader(inputFile)
+    pdfReader = PyPDF2.PdfFileReader(inputFile, strict=False)
 
     pages = []
     for i in range(pdfReader.getNumPages()):
@@ -135,7 +135,7 @@ def extractImages(inputFilename):
 def extractText(inputFilename):
     
     inputFile = open(os.path.join("input", inputFilename), "rb")
-    pdfReader = PyPDF2.PdfFileReader(inputFile)
+    pdfReader = PyPDF2.PdfFileReader(inputFile, strict=False)
 
     pages = []
     for i in range(pdfReader.getNumPages()):
@@ -220,7 +220,7 @@ if __name__ == '__main__':
             num = int(input(f'Number of file to split: '))
             assert num >= 1 and num <= len(inputFiles)
 
-            numPages = PyPDF2.PdfFileReader(inputFiles[num-1]).getNumPages()
+            numPages = PyPDF2.PdfFileReader(inputFiles[num-1], strict=False).getNumPages()
             if numPages < 2:
                 print('Not enough pages. Exiting.')
                 exit(0)
